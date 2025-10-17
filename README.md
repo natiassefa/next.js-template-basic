@@ -2,6 +2,20 @@
 
 A comprehensive Next.js template with routing, API routes, loading states, and error boundaries.
 
+## Table of Contents
+
+- [Features](#features)
+- [Getting Started](#getting-started)
+- [Project Structure](#project-structure)
+- [Component Libraries](#component-libraries)
+  - [Hero UI](#hero-ui)
+  - [shadcn/ui](#shadcnui)
+  - [Chakra UI](#chakra-ui)
+- [API Endpoints](#api-endpoints)
+- [SEO Setup](#seo-setup)
+- [Learn More](#learn-more)
+- [Deploy](#deploy)
+
 ## Features
 
 - **App Router** - File-based routing with layouts and nested routes
