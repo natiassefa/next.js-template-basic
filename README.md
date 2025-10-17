@@ -16,32 +16,34 @@ A comprehensive Next.js template with routing, API routes, loading states, and e
 
 ## Getting Started
 
-### 1. Customize the Template
+### 1. Run the Setup Script
 
-Run the setup script to personalize the template with your project name and optionally install a component library:
+The interactive setup script will configure everything for you:
 
 ```bash
 npm run setup "My Project Name"
 ```
 
-Or run it interactively:
+Or run it interactively (it will prompt for the project name):
 
 ```bash
 npm run setup
 ```
 
-The setup script will:
-- Update all template references with your project name
-- Let you choose a component library (Hero UI, shadcn/ui, Chakra UI, or none)
-- Automatically install and configure your selected component library
+**What the setup script does:**
+- ✅ Updates all template references with your project name
+- ✅ Cleans and installs all dependencies (`npm ci`)
+- ✅ Presents an interactive menu to choose a component library
+- ✅ **Automatically installs and configures** your selected library:
+  - **Hero UI**: Installs packages, adds provider to layout.tsx, updates tailwind.config.ts
+  - **shadcn/ui**: Initializes shadcn, installs 6 common components (button, card, input, label, dialog, dropdown-menu)
+  - **Chakra UI**: Installs packages and adds ChakraProvider to layout.tsx
+  - **None**: Skip component library installation
+- ✅ Components are ready to use immediately after setup!
 
-### 2. Install Dependencies
+### 2. Start Development
 
-```bash
-npm install
-```
-
-### 3. Run Development Server
+After setup completes, start the development server:
 
 ```bash
 npm run dev
@@ -77,26 +79,68 @@ src/app/
 
 ## Component Libraries
 
-The setup script supports the following component libraries:
+The setup script provides **fully automated installation and configuration** for popular component libraries:
 
 ### Hero UI
-React components built on top of Tailwind CSS with a focus on accessibility and customization.
-- **Website:** https://www.heroui.com
-- **Installation:** Selected during setup script
+React components built on top of Tailwind CSS with beautiful design and accessibility.
+
+**Automatic Setup:**
+- ✅ Installs `@heroui/react` and `framer-motion`
+- ✅ Adds `HeroUIProvider` to `layout.tsx`
+- ✅ Updates `tailwind.config.ts` with Hero UI plugin
+
+**Usage after setup:**
+```tsx
+import { Button, Card, Input } from '@heroui/react';
+
+<Button color="primary">Click me</Button>
+```
+
+**Documentation:** https://www.heroui.com
 
 ### shadcn/ui
-Beautifully designed components built with Radix UI and Tailwind CSS that you can copy and paste into your apps.
-- **Website:** https://ui.shadcn.com
-- **Installation:** Selected during setup script
-- **Usage:** Run `npx shadcn@latest add [component]` to add components
+Beautifully designed components built with Radix UI and Tailwind CSS.
+
+**Automatic Setup:**
+- ✅ Initializes shadcn/ui with default configuration
+- ✅ Auto-installs 6 common components:
+  - `button`, `card`, `input`, `label`, `dialog`, `dropdown-menu`
+- ✅ Creates `components/ui` directory structure
+
+**Usage after setup:**
+```tsx
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+
+<Button variant="default">Click me</Button>
+```
+
+**Add more components:**
+```bash
+npx shadcn@latest add [component-name]
+```
+
+**Documentation:** https://ui.shadcn.com
 
 ### Chakra UI
-A simple, modular and accessible component library that gives you the building blocks to build React applications.
-- **Website:** https://chakra-ui.com
-- **Installation:** Selected during setup script
+Simple, modular and accessible component library for React applications.
+
+**Automatic Setup:**
+- ✅ Installs `@chakra-ui/react`, `@emotion/react`, `@emotion/styled`, and `framer-motion`
+- ✅ Adds `ChakraProvider` to `layout.tsx`
+- ✅ Configures "use client" directive
+
+**Usage after setup:**
+```tsx
+import { Button, Box, Card, Input } from '@chakra-ui/react';
+
+<Button colorScheme="blue">Click me</Button>
+```
+
+**Documentation:** https://chakra-ui.com
 
 ### None
-Skip component library installation and use your own preferred solution.
+Skip component library installation and use your own preferred solution or add one manually later.
 
 ## API Endpoints
 
