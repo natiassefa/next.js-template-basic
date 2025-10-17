@@ -4,6 +4,7 @@ import * as fs from "fs";
 import * as path from "path";
 import * as readline from "readline";
 import { execSync } from "child_process";
+import { runSeoSetup } from "./seo-setup";
 
 // Types
 interface Config {
@@ -558,6 +559,22 @@ async function setup(): Promise<void> {
     console.log("  3. Start building your application!");
   }
   console.log("=".repeat(60) + "\n");
+
+  // SEO Setup prompt
+  console.log("🔍 SEO Setup\n");
+  const setupSeo = await prompt(
+    "Would you like to set up SEO configuration now? (Y/n): "
+  );
+
+  if (setupSeo.toLowerCase() !== "n") {
+    await runSeoSetup();
+  } else {
+    console.log(
+      "\n💡 You can run SEO setup anytime with: npm run seo-setup\n"
+    );
+  }
+
+  console.log("\n🎉 All done! Happy coding!\n");
 }
 
 // Run setup

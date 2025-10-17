@@ -166,6 +166,67 @@ To learn more about Next.js, check out:
 - [Next.js App Router](https://nextjs.org/docs/app)
 - [Learn Next.js](https://nextjs.org/learn)
 
+## SEO Setup
+
+This template includes a comprehensive SEO setup script that can be run standalone:
+
+```bash
+npm run seo-setup
+```
+
+### Using a Template File
+
+For faster setup or CI/CD automation, you can use a template file:
+
+1. **Copy the template:**
+   ```bash
+   cp seo-template.json my-seo-config.json
+   ```
+
+2. **Edit the configuration** in `my-seo-config.json`:
+   ```json
+   {
+     "siteName": "My Awesome Site",
+     "siteTagline": "Building amazing things",
+     "siteUrl": "https://example.com",
+     "author": "Your Name",
+     "locale": "en",
+     "businessType": "saas",
+     "keywords": ["nextjs", "react", "typescript"],
+     "social": {
+       "twitter": "yourusername",
+       "facebook": "https://facebook.com/yourpage",
+       "linkedin": "https://linkedin.com/in/yourprofile"
+     }
+   }
+   ```
+
+3. **Run setup with the template:**
+   ```bash
+   npm run seo-setup -- --template=my-seo-config.json
+   ```
+
+### Interactive Mode
+
+The script also supports interactive mode where it will prompt you for all information:
+
+```bash
+npm run seo-setup
+```
+
+You can also choose to use a template file during the interactive session.
+
+### What Gets Generated
+
+The SEO setup creates:
+- `src/lib/seo.config.ts` - Centralized SEO configuration
+- `src/lib/metadata-helper.ts` - Helper functions for page metadata
+- `src/lib/structured-data.tsx` - JSON-LD schema helpers
+- `src/app/sitemap.ts` - Automatic sitemap generation
+- `src/app/robots.ts` - SEO-friendly robots.txt
+- `src/app/manifest.ts` - PWA manifest
+- `docs/SEO_GUIDE.md` - Complete SEO guide
+
 ## Deploy
 
 Deploy your Next.js app using [Vercel](https://vercel.com/new) or any Node.js hosting platform.

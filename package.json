@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "setup": "tsx scripts/setup.ts",
+    "seo-setup": "tsx scripts/seo-setup.ts",
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",

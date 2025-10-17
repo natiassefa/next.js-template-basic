@@ -39,3 +39,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# custom seo config files (keep template but ignore custom configs)
+my-seo-config.json
+*-seo-config.json
+!seo-template.json

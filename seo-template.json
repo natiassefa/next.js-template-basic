@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "title": "SEO Configuration Template",
+  "description": "Use this template to pre-configure your SEO settings. Fill in the values and run: npm run seo-setup -- --template=seo-template.json",
+  "siteName": "My Awesome Site",
+  "siteTagline": "Building amazing things with Next.js",
+  "siteUrl": "https://example.com",
+  "author": "Your Name or Company",
+  "locale": "en",
+  "businessType": "saas",
+  "keywords": ["nextjs", "react", "typescript", "web development"],
+  "social": {
+    "twitter": "yourusername",
+    "facebook": "https://facebook.com/yourpage",
+    "linkedin": "https://linkedin.com/in/yourprofile"
+  },
+  "_comments": {
+    "businessType": "Options: blog, ecommerce, portfolio, saas, corporate, other",
+    "locale": "Language code (e.g., en, es, fr, de)",
+    "keywords": "Array of 3-5 primary keywords for your site ",
+    "social": "All social fields are optional - remove or leave empty if not needed",
+    "siteUrl": "Your production URL without trailing slash"
+  }
+}
