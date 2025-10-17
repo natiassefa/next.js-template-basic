@@ -1,20 +1,49 @@
 #!/usr/bin/env node
 
-const fs = require("fs");
-const path = require("path");
-const readline = require("readline");
-const { execSync } = require("child_process");
+import * as fs from "fs";
+import * as path from "path";
+import * as readline from "readline";
+import { execSync } from "child_process";
+
+// Types
+interface Config {
+  projectName: string;
+  componentLibrary: string | null;
+}
+
+interface TailwindConfig {
+  content?: string[];
+  plugins?: string[];
+}
+
+interface ComponentLibrary {
+  name: string;
+  description: string;
+  packages?: string[];
+  devPackages?: string[];
+  commonComponents?: string[];
+  tailwindConfig?: TailwindConfig;
+  setupInstructions?: string;
+  customSetup?: () => Promise<void>;
+}
+
+interface ComponentLibraries {
+  [key: string]: ComponentLibrary;
+}
+
+interface Replacement {
+  from: string;
+  to: string;
+}
 
 // Configuration for future extensibility
-const config = {
+const config: Config = {
   projectName: "",
   componentLibrary: null,
-  // Future options will go here
-  // cssFramework: null,
 };
 
 // Component library options
-const COMPONENT_LIBRARIES = {
+const COMPONENT_LIBRARIES: ComponentLibraries = {
   none: {
     name: "None",
     description: "Skip component library installation",
@@ -24,38 +53,69 @@ const COMPONENT_LIBRARIES = {
     description: "React components built on top of Tailwind CSS",
     packages: ["@heroui/react", "framer-motion"],
     devPackages: [],
+    tailwindConfig: {
+      content: [
+        "./node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}",
+      ],
+      plugins: ["require('@heroui/react')"],
+    },
     setupInstructions: `
-Hero UI has been installed! To use it:
+Hero UI has been installed and configured!
 
-1. Import components in your app:
-   import { Button, Card } from '@heroui/react';
+✅ Installed packages: @heroui/react, framer-motion
+✅ Added HeroUIProvider to layout.tsx
+✅ Updated tailwind.config.ts
 
-2. Check the documentation: https://www.heroui.com/docs
+You can now use Hero UI components:
+  import { Button, Card, Input } from '@heroui/react';
+
+Check the documentation: https://www.heroui.com/docs
 `,
+    customSetup: async () => {
+      await updateLayoutForHeroUI();
+      await updateTailwindConfig("heroui");
+    },
   },
   shadcn: {
     name: "shadcn/ui",
     description: "Beautifully designed components built with Radix UI and Tailwind CSS",
     packages: [],
     devPackages: [],
+    commonComponents: ["button", "card", "input", "label", "dialog", "dropdown-menu"],
     setupInstructions: `
-shadcn/ui has been initialized! To add components:
+shadcn/ui has been installed and configured!
 
-1. Run: npx shadcn@latest add button
-2. Run: npx shadcn@latest add card
-3. Import and use: import { Button } from "@/components/ui/button"
+✅ Initialized shadcn/ui with default config
+✅ Installed common components: button, card, input, label, dialog, dropdown-menu
 
+You can now use components:
+  import { Button } from "@/components/ui/button";
+  import { Card } from "@/components/ui/card";
+
+Add more components: npx shadcn@latest add [component]
 Check the documentation: https://ui.shadcn.com/docs
 `,
     customSetup: async () => {
       console.log("\n📦 Initializing shadcn/ui...\n");
       try {
+        // Initialize shadcn with default config
         execSync("npx shadcn@latest init -y -d", {
           stdio: "inherit",
           cwd: process.cwd(),
         });
+
+        // Install common components
+        console.log("\n📦 Installing common components...\n");
+        const components = ["button", "card", "input", "label", "dialog", "dropdown-menu"];
+        for (const component of components) {
+          console.log(`Installing ${component}...`);
+          execSync(`npx shadcn@latest add ${component} -y`, {
+            stdio: "inherit",
+            cwd: process.cwd(),
+          });
+        }
       } catch (error) {
-        console.error("⚠️  shadcn/ui initialization had issues. You may need to run 'npx shadcn@latest init' manually.");
+        console.error("⚠️  shadcn/ui setup had issues. You may need to run setup commands manually.");
       }
     },
   },
@@ -65,18 +125,24 @@ Check the documentation: https://ui.shadcn.com/docs
     packages: ["@chakra-ui/react", "@emotion/react", "@emotion/styled", "framer-motion"],
     devPackages: [],
     setupInstructions: `
-Chakra UI has been installed! To use it:
+Chakra UI has been installed and configured!
 
-1. Wrap your app with ChakraProvider in layout.tsx
-2. Import components: import { Button, Box } from '@chakra-ui/react';
+✅ Installed packages: @chakra-ui/react, @emotion/react, @emotion/styled, framer-motion
+✅ Added ChakraProvider to layout.tsx
+
+You can now use Chakra UI components:
+  import { Button, Box, Card, Input } from '@chakra-ui/react';
 
 Check the documentation: https://chakra-ui.com/docs
 `,
+    customSetup: async () => {
+      await updateLayoutForChakraUI();
+    },
   },
 };
 
 // Files that need to be updated with project name
-const filesToUpdate = [
+const filesToUpdate: string[] = [
   "README.md",
   "package.json",
   "src/app/layout.tsx",
@@ -86,7 +152,7 @@ const filesToUpdate = [
 ];
 
 // Text replacements based on project name
-function getReplacements(projectName) {
+function getReplacements(projectName: string): Replacement[] {
   const titleCase = projectName
     .split(/[-_\s]+/)
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
@@ -160,7 +226,7 @@ function getReplacements(projectName) {
 }
 
 // Update a single file with replacements
-function updateFile(filePath, replacements) {
+function updateFile(filePath: string, replacements: Replacement[]): boolean {
   const fullPath = path.join(process.cwd(), filePath);
 
   if (!fs.existsSync(fullPath)) {
@@ -189,12 +255,12 @@ function updateFile(filePath, replacements) {
 }
 
 // Escape special regex characters
-function escapeRegex(string) {
+function escapeRegex(string: string): string {
   return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 // Prompt user for input
-function prompt(question) {
+function prompt(question: string): Promise<string> {
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
@@ -209,7 +275,7 @@ function prompt(question) {
 }
 
 // Display component library menu and get selection
-async function selectComponentLibrary() {
+async function selectComponentLibrary(): Promise<string> {
   console.log("\n📚 Select a Component Library:\n");
 
   const options = Object.entries(COMPONENT_LIBRARIES);
@@ -231,7 +297,7 @@ async function selectComponentLibrary() {
 }
 
 // Install packages using npm
-function installPackages(packages, isDev = false) {
+function installPackages(packages: string[], isDev: boolean = false): void {
   if (!packages || packages.length === 0) return;
 
   const devFlag = isDev ? " --save-dev" : "";
@@ -251,8 +317,142 @@ function installPackages(packages, isDev = false) {
   }
 }
 
+// Update layout.tsx for Hero UI
+async function updateLayoutForHeroUI(): Promise<void> {
+  const layoutPath = path.join(process.cwd(), "src/app/layout.tsx");
+  let content = fs.readFileSync(layoutPath, "utf8");
+
+  // Check if already configured
+  if (content.includes("HeroUIProvider")) {
+    console.log("ℹ️  Hero UI provider already configured in layout.tsx");
+    return;
+  }
+
+  // Add "use client" directive at the top
+  if (!content.includes('"use client"')) {
+    content = '"use client";\n\n' + content;
+  }
+
+  // Add import
+  const importStatement = 'import { HeroUIProvider } from "@heroui/react";\n';
+  if (!content.includes(importStatement)) {
+    content = content.replace(
+      'import "./globals.css";',
+      'import "./globals.css";\n' + importStatement
+    );
+  }
+
+  // Wrap children with provider
+  content = content.replace(
+    /{\s*children\s*}/,
+    "<HeroUIProvider>\n        {children}\n      </HeroUIProvider>"
+  );
+
+  fs.writeFileSync(layoutPath, content, "utf8");
+  console.log("✅ Updated layout.tsx with HeroUIProvider");
+}
+
+// Update layout.tsx for Chakra UI
+async function updateLayoutForChakraUI(): Promise<void> {
+  const layoutPath = path.join(process.cwd(), "src/app/layout.tsx");
+  let content = fs.readFileSync(layoutPath, "utf8");
+
+  // Check if already configured
+  if (content.includes("ChakraProvider")) {
+    console.log("ℹ️  Chakra UI provider already configured in layout.tsx");
+    return;
+  }
+
+  // Add "use client" directive at the top
+  if (!content.includes('"use client"')) {
+    content = '"use client";\n\n' + content;
+  }
+
+  // Add import
+  const importStatement = 'import { ChakraProvider } from "@chakra-ui/react";\n';
+  if (!content.includes(importStatement)) {
+    content = content.replace(
+      'import "./globals.css";',
+      'import "./globals.css";\n' + importStatement
+    );
+  }
+
+  // Wrap children with provider
+  content = content.replace(
+    /{\s*children\s*}/,
+    "<ChakraProvider>\n        {children}\n      </ChakraProvider>"
+  );
+
+  fs.writeFileSync(layoutPath, content, "utf8");
+  console.log("✅ Updated layout.tsx with ChakraProvider");
+}
+
+// Update tailwind.config.ts
+async function updateTailwindConfig(library: string): Promise<void> {
+  const configPath = path.join(process.cwd(), "tailwind.config.ts");
+
+  if (!fs.existsSync(configPath)) {
+    console.log("⚠️  tailwind.config.ts not found, skipping tailwind config update");
+    return;
+  }
+
+  let content = fs.readFileSync(configPath, "utf8");
+  const libraryConfig = COMPONENT_LIBRARIES[library].tailwindConfig;
+
+  if (!libraryConfig) return;
+
+  // Update content array
+  if (libraryConfig.content) {
+    const contentMatch = content.match(/content:\s*\[([\s\S]*?)\]/);
+    if (contentMatch) {
+      const existingContent = contentMatch[1];
+      const newContentItems = libraryConfig.content
+        .filter(item => !existingContent.includes(item))
+        .map(item => `    "${item}",`)
+        .join('\n');
+
+      if (newContentItems) {
+        content = content.replace(
+          /content:\s*\[([\s\S]*?)\]/,
+          `content: [\n${existingContent}${newContentItems}\n  ]`
+        );
+      }
+    }
+  }
+
+  // Update plugins array
+  if (libraryConfig.plugins) {
+    if (!content.includes("plugins:")) {
+      // Add plugins array if it doesn't exist
+      content = content.replace(
+        /}\s*;?\s*$/,
+        `,\n  plugins: [${libraryConfig.plugins.join(", ")}],\n};`
+      );
+    } else {
+      // Add to existing plugins array
+      const pluginsMatch = content.match(/plugins:\s*\[([\s\S]*?)\]/);
+      if (pluginsMatch) {
+        const existingPlugins = pluginsMatch[1];
+        const newPlugins = libraryConfig.plugins
+          .filter(plugin => !existingPlugins.includes(plugin))
+          .join(", ");
+
+        if (newPlugins) {
+          content = content.replace(
+            /plugins:\s*\[([\s\S]*?)\]/,
+            `plugins: [${existingPlugins}${existingPlugins.trim() ? ", " : ""}${newPlugins}]`
+          );
+        }
+      }
+    }
+  }
+
+  fs.writeFileSync(configPath, content, "utf8");
+  console.log("✅ Updated tailwind.config.ts");
+}
+
 // Setup component library
-async function setupComponentLibrary(libraryKey) {
+async function setupComponentLibrary(libraryKey: string): Promise<void> {
   if (libraryKey === "none") {
     console.log("\n⏭️  Skipping component library installation.\n");
     return;
@@ -285,7 +485,7 @@ async function setupComponentLibrary(libraryKey) {
 }
 
 // Validate project name
-function isValidProjectName(name) {
+function isValidProjectName(name: string): boolean {
   if (!name || name.trim().length === 0) {
     return false;
   }
@@ -294,7 +494,7 @@ function isValidProjectName(name) {
 }
 
 // Main setup function
-async function setup() {
+async function setup(): Promise<void> {
   console.log("\n🚀 Next.js Template Setup\n");
   console.log("This script will customize the template for your project.\n");
 
@@ -336,13 +536,13 @@ async function setup() {
   config.componentLibrary = componentLibrary;
 
   console.log("\n🧹 Cleaning and installing dependencies...\n");
-  // run clean install 
+  // run clean install
   execSync("npm ci", {
     stdio: "inherit",
     cwd: process.cwd(),
   });
   console.log("\n✅ Dependencies cleaned and installed successfully!\n");
-  
+
   await setupComponentLibrary(componentLibrary);
 
   console.log("\n" + "=".repeat(60));
