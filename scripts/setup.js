@@ -335,6 +335,14 @@ async function setup() {
   const componentLibrary = await selectComponentLibrary();
   config.componentLibrary = componentLibrary;
 
+  console.log("\n🧹 Cleaning and installing dependencies...\n");
+  // run clean install 
+  execSync("npm ci", {
+    stdio: "inherit",
+    cwd: process.cwd(),
+  });
+  console.log("\n✅ Dependencies cleaned and installed successfully!\n");
+  
   await setupComponentLibrary(componentLibrary);
 
   console.log("\n" + "=".repeat(60));
